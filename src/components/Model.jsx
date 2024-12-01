@@ -5,69 +5,81 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 
 const MODEL_URL = 'https://utfs.io/f/zALdaFej0tyef6wegO2UwhctIHY7xMjLSGQZdrezTXyROqKp'
-const CACHE_KEY = 'modelCache_v1' // Version control for cache
+const CACHE_KEY = 'modelCache_v1'
 
-// Fetch with Progress Tracking and Caching
 function useModelDownload(url) {
   const [progress, setProgress] = useState(0)
   const [model, setModel] = useState(null)
 
   useEffect(() => {
-    const fetchModel = async () => {
+    const loader = new GLTFLoader()
+    
+    // Check cache first
+    caches.open(CACHE_KEY).then(async (cache) => {
       try {
-        // Try to fetch from cache first
-        const cache = await caches.open(CACHE_KEY)
-        let response = await cache.match(url)
-        
-        if (!response) {
-          // If not in cache, fetch from network
-          console.log('Downloading model from network...')
-          response = await fetch(url, {
-            cache: 'force-cache' // Tell browser to check its HTTP cache
-          })
-          
-          // Store in cache for future use
-          await cache.put(url, response.clone())
-        } else {
+        const cachedResponse = await cache.match(url)
+        if (cachedResponse) {
           console.log('Loading model from cache...')
-          setProgress(50) // Start at 50% if loading from cache
+          const blob = await cachedResponse.blob()
+          const arrayBuffer = await blob.arrayBuffer()
+          
+          loader.parse(arrayBuffer, '', 
+            (gltf) => {
+              setModel(gltf)
+              setProgress(100)
+              console.log('Model loaded from cache!')
+            },
+            (error) => {
+              console.error('Error parsing cached model:', error)
+              loadFromNetwork()
+            }
+          )
+        } else {
+          loadFromNetwork()
         }
+      } catch (error) {
+        console.error('Cache error:', error)
+        loadFromNetwork()
+      }
+    })
 
-        const reader = response.body.getReader()
-        const contentLength = +response.headers.get('Content-Length')
-        
-        let receivedLength = 0
-        const chunks = []
-
-        while(true) {
-          const {done, value} = await reader.read()
-          
-          if (done) break
-          
-          chunks.push(value)
-          receivedLength += value.length
-          
-          if (contentLength) {
-            setProgress(Math.round((receivedLength / contentLength) * 100))
-          }
-        }
-        
-        const blob = new Blob(chunks)
-        const arrayBuffer = await blob.arrayBuffer()
-        
-        const loader = new GLTFLoader()
-        loader.parse(arrayBuffer, '', (gltf) => {
+    function loadFromNetwork() {
+      console.log('Downloading model from network...')
+      loader.load(
+        url,
+        async (gltf) => {
           setModel(gltf)
           setProgress(100)
-          console.log('Model loaded successfully!')
-        })
-      } catch (error) {
-        console.error('Model download error:', error)
-        setProgress(0)
-      }
+          console.log('Model loaded from network!')
+          
+          // Cache the model for future use
+          try {
+            const response = await fetch(url)
+            const cache = await caches.open(CACHE_KEY)
+            await cache.put(url, response)
+            console.log('Model cached successfully!')
+          } catch (error) {
+            console.error('Caching error:', error)
+          }
+        },
+        (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100)
+            setProgress(percent)
+          }
+        },
+        (error) => {
+          console.error('Model loading error:', error)
+          setProgress(0)
+        }
+      )
     }
 
-    fetchModel()
+    return () => {
+      // Cleanup if component unmounts during loading
+      setProgress(0)
+      setModel(null)
+    }
   }, [url])
 
   return { progress, model }
@@ -112,15 +124,12 @@ export default function Model({ onProgress, onLabelClick }) {
   const { camera } = useThree()
   const [modelLoaded, setModelLoaded] = useState(false)
   
-  // Use custom fetch with progress
   const { progress, model: gltf } = useModelDownload(MODEL_URL)
 
-  // Track progress via prop
   useEffect(() => {
     onProgress(progress)
   }, [progress, onProgress])
 
-  // Process loaded model
   useEffect(() => {
     if (gltf) {
       // Center the model
