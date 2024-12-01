@@ -44,10 +44,12 @@ function App() {
     // You can implement additional search logic here
   }
 
+  const isLoaded = loadingProgress === 100
+
   return (
     <div className="app-container">
       <LoadingScreen progress={loadingProgress} />
-      <SearchBar onSearch={handleSearch} />
+      {isLoaded && <SearchBar onSearch={handleSearch} />}
       <InfoPanel info={selectedInfo} onClose={() => setSelectedInfo(null)} />
       <Canvas
         camera={{ position: [0, 2, 10], fov: 75 }}
