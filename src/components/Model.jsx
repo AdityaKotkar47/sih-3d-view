@@ -5,8 +5,9 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 
 const MODEL_URL = 'https://utfs.io/f/zALdaFej0tyef6wegO2UwhctIHY7xMjLSGQZdrezTXyROqKp'
+const CACHE_KEY = 'modelCache_v1' // Version control for cache
 
-// Method 1: Fetch with Progress Tracking
+// Fetch with Progress Tracking and Caching
 function useModelDownload(url) {
   const [progress, setProgress] = useState(0)
   const [model, setModel] = useState(null)
@@ -14,7 +15,24 @@ function useModelDownload(url) {
   useEffect(() => {
     const fetchModel = async () => {
       try {
-        const response = await fetch(url)
+        // Try to fetch from cache first
+        const cache = await caches.open(CACHE_KEY)
+        let response = await cache.match(url)
+        
+        if (!response) {
+          // If not in cache, fetch from network
+          console.log('Downloading model from network...')
+          response = await fetch(url, {
+            cache: 'force-cache' // Tell browser to check its HTTP cache
+          })
+          
+          // Store in cache for future use
+          await cache.put(url, response.clone())
+        } else {
+          console.log('Loading model from cache...')
+          setProgress(50) // Start at 50% if loading from cache
+        }
+
         const reader = response.body.getReader()
         const contentLength = +response.headers.get('Content-Length')
         
@@ -41,6 +59,7 @@ function useModelDownload(url) {
         loader.parse(arrayBuffer, '', (gltf) => {
           setModel(gltf)
           setProgress(100)
+          console.log('Model loaded successfully!')
         })
       } catch (error) {
         console.error('Model download error:', error)
