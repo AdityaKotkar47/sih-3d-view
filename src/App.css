@@ -135,3 +135,51 @@ body, html {
 .read-the-docs {
   color: #888;
 }
+
+@media (max-width: 768px) {
+  .search-container {
+    width: 85%;
+    top: 15px;
+  }
+
+  .info-panel {
+    width: 85%;
+    bottom: 15px;
+    right: 50%;
+    transform: translateX(50%);
+    animation: slideUpMobile 0.5s ease-out;
+  }
+
+  .search-input {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .info-panel h3 {
+    font-size: 16px;
+    margin-right: 25px;
+  }
+
+  .info-panel p {
+    font-size: 14px;
+  }
+}
+
+/* Add new mobile animation */
+@keyframes slideUpMobile {
+  from {
+    transform: translate(50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(50%, 0);
+    opacity: 1;
+  }
+}
+
+/* Keep desktop animation for larger screens */
+@media (min-width: 769px) {
+  .info-panel {
+    animation: slideIn 0.3s ease-out;
+  }
+}
