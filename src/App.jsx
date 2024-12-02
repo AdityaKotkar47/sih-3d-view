@@ -57,6 +57,9 @@ function App() {
 
   const handleSearch = (query) => {
     setSearchQuery(query.toLowerCase())
+    if (!query) {
+      setSelectedInfo(null)
+    }
   }
 
   const handleSearchEnter = () => {
@@ -64,6 +67,12 @@ function App() {
       setSelectedInfo(highlightedAmenity)
     }
   }
+
+  useEffect(() => {
+    if (highlightedAmenity && searchQuery) {
+      setSelectedInfo(highlightedAmenity)
+    }
+  }, [highlightedAmenity, searchQuery])
 
   const isLoaded = loadingProgress === 100
 
