@@ -41,7 +41,6 @@ function App() {
 
   const handleSearch = (query) => {
     setSearchQuery(query.toLowerCase())
-    // You can implement additional search logic here
   }
 
   const isLoaded = loadingProgress === 100
@@ -64,8 +63,18 @@ function App() {
           <OrbitControls 
             enableDamping
             dampingFactor={0.05}
-            minDistance={5}
-            maxDistance={20}
+            minDistance={0.1}
+            maxDistance={1000}
+            enablePan={true}
+            panSpeed={1}
+            enableZoom={true}
+            zoomSpeed={1}
+            enableRotate={true}
+            rotateSpeed={1}
+            maxPolarAngle={Math.PI}
+            minPolarAngle={0}
+            maxAzimuthAngle={Infinity}
+            minAzimuthAngle={-Infinity}
           />
         </Suspense>
       </Canvas>
