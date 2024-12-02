@@ -13,6 +13,7 @@ function SearchBar({ onSearch }) {
         placeholder="Search amenities..."
         onChange={(e) => onSearch(e.target.value)}
         className="search-input"
+        autoFocus
       />
     </div>
   )
@@ -59,6 +60,7 @@ function App() {
           <Model 
             onProgress={setLoadingProgress}
             onLabelClick={handleLabelClick}
+            searchQuery={searchQuery}
           />
           <OrbitControls 
             enableDamping
