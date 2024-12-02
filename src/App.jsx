@@ -1,17 +1,24 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment } from '@react-three/drei'
+import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei'
 import Model from './components/Model'
 import LoadingScreen from './components/LoadingScreen'
 import './App.css'
 
-function SearchBar({ onSearch }) {
+function SearchBar({ onSearch, onEnter }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      onEnter()
+    }
+  }
+
   return (
     <div className="search-container">
       <input
         type="text"
         placeholder="Search amenities..."
         onChange={(e) => onSearch(e.target.value)}
+        onKeyDown={handleKeyDown}
         className="search-input"
         autoFocus
       />
@@ -42,6 +49,7 @@ function App() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [selectedInfo, setSelectedInfo] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [highlightedAmenity, setHighlightedAmenity] = useState(null)
 
   const handleLabelClick = (info) => {
     setSelectedInfo(info)
@@ -51,23 +59,54 @@ function App() {
     setSearchQuery(query.toLowerCase())
   }
 
+  const handleSearchEnter = () => {
+    if (highlightedAmenity) {
+      setSelectedInfo(highlightedAmenity)
+    }
+  }
+
   const isLoaded = loadingProgress === 100
+
+  useEffect(() => {
+    const handleError = (error) => {
+      console.error('Error caught by error boundary:', error)
+      // You can show an error message to the user here
+    }
+
+    window.addEventListener('error', handleError)
+
+    return () => {
+      window.removeEventListener('error', handleError)
+    }
+  }, [])
 
   return (
     <div className="app-container">
       <LoadingScreen progress={loadingProgress} />
-      {isLoaded && <SearchBar onSearch={handleSearch} />}
+      {isLoaded && (
+        <SearchBar 
+          onSearch={handleSearch} 
+          onEnter={handleSearchEnter}
+        />
+      )}
       <InfoPanel info={selectedInfo} onClose={() => setSelectedInfo(null)} />
       <Canvas
         camera={{ position: [0, 2, 10], fov: 75 }}
-        style={{ width: '100vw', height: '100vh' }}
+        style={{ 
+          width: '100vw', 
+          height: '100vh',
+          background: '#242424'
+        }}
       >
         <Suspense fallback={null}>
           <Environment preset="city" />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[10, 10, 5]} intensity={1} />
           <Model 
             onProgress={setLoadingProgress}
             onLabelClick={handleLabelClick}
             searchQuery={searchQuery}
+            onHighlightedAmenityChange={setHighlightedAmenity}
           />
           <OrbitControls 
             enableDamping

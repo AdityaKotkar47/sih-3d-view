@@ -4,125 +4,123 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import gsap from 'gsap'
+import { 
+  Hotel, 
+  Sofa, 
+  HelpCircle, 
+  Footprints, 
+  Ticket, 
+  Tablet, 
+  ShoppingBag, 
+  UtensilsCrossed, 
+  Lock,
+  Bath
+} from 'lucide-react'
 
 const MODEL_URL = 'https://utfs.io/f/zALdaFej0tyef6wegO2UwhctIHY7xMjLSGQZdrezTXyROqKp'
 const CACHE_KEY = 'modelCache_v1'
 
-const AMENITIES = [
-    {
-      "id": 1,
-      "position": [
-        12.016415459246158,
-        2.545179283145544,
-        8.040242463854476
-      ],
-      "name": "Guest Room",
-      "description": "Staying rooms for long layovers",
-      "image": "https://cdn.pixabay.com/photo/2016/11/30/08/48/bedroom-1872196_1280.jpg"
-    },
-    {
-      "id": 2,
-      "position": [
-        26.057093979852517,
-        2.903489407401707,
-        7.43914190356371
-      ],
-      "name": "Waiting Area",
-      "description": "Sitting lounge for waiting for trains",
-      "image": "https://cdn.pixabay.com/photo/2014/11/27/20/14/waiting-room-548136_960_720.jpg"
-    },
-    {
-      "id": 3,
-      "position": [
-        35.530266678879194,
-        2.66204965501281,
-        5.586113143093582
-      ],
-      "name": "Helpdesk and police station",
-      "description": "Helpdesk area to seek help in case of emergency.",
-      "image": "https://cdn.pixabay.com/photo/2016/02/26/01/13/telephone-1223310_1280.jpg"
-    },
-    {
-      "id": 4,
-      "position": [
-        32.7898925979792,
-        -5.0797801005786525,
-        -2.1249571787497055
-      ],
-      "name": "Flyover",
-      "description": "Flyover connecting platform 1 and platform 2.",
-      "image": "https://cdn.pixabay.com/photo/2020/09/24/17/44/bridge-5599336_1280.jpg"
-    },
-    {
-      "id": 5,
-      "position": [
-        27.902290155942367,
-        -4.710425474953573,
-        -1.1645742440065368
-      ],
-      "name": "Ticket Counter",
-      "description": "Collect ticket for trains.",
-      "image": "https://media.istockphoto.com/id/624374948/photo/boarding-the-plane-departure-lounge.jpg?s=1024x1024&w=is&k=20&c=S741SDjVd2pebhcaNliX590jmkpWbAdS7P_YAE7CSZE="
-    },
-    {
-      "id": 6,
-      "position": [
-        9.357971435217456,
-        -6.109332195695361,
-        0.6194542677134705
-      ],
-      "name": "Digital Kiosk 1",
-      "description": "Kiosks for navigation and calling helpdesks.",
-      "image": "https://media.istockphoto.com/id/1471533844/photo/copenhagen-denmark.jpg?s=612x612&w=0&k=20&c=s5VcO6pyrraTQuKPkfRfyVSLRwrHr84uzoSR2wJvuVI="
-    },
-    {
-      "id": 7,
-      "position": [
-        -19.347162965118233,
-        -1.4721520611946464,
-        1.2886667075625238
-      ],
-      "name": "Miscelleneous Stores",
-      "description": "Book Stores, General Stores, Toy Stores etc.",
-      "image": "https://cdn.pixabay.com/photo/2016/03/02/20/13/grocery-1232944_960_720.jpg"
-    },
-    {
-      "id": 8,
-      "position": [
-        -5.6070942333090965,
-        -0.9286954981430944,
-        4.635295612679769
-      ],
-      "name": "Food court",
-      "description": "Food court with multiple food business outlets.",
-      "image": "https://cdn.pixabay.com/photo/2021/11/01/15/52/spring-roll-6760871_1280.jpg"
-    },
-    {
-      "id": 9,
-      "position": [
-        -32.34578096983119,
-        -0.6615612553673581,
-        7.7113781505357695
-      ],
-      "name": "Luggage lockers",
-      "description": "Keep your luggage safe at lockers here.",
-      "image": "https://cdn.pixabay.com/photo/2015/11/10/22/29/odd-1037935_960_720.jpg"
-    },
-    {
-      "id": 10,
-      "position": [
-        -22.300059797786226,
-        -0.4004004744364605,
-        2.3471971288012274
-      ],
-      "name": "Washroom",
-      "description": "Washroom",
-      "image": "https://cdn.pixabay.com/photo/2021/12/18/06/02/bathroom-6878035_1280.jpg"
-    }
-  ]
+const getIconComponent = (tags) => {
+  // Map tags to icons - can be expanded based on more tags
+  if (tags.includes('accommodation')) return Hotel
+  if (tags.includes('seating')) return Sofa
+  if (tags.includes('help')) return HelpCircle
+  if (tags.includes('bridge')) return Footprints
+  if (tags.includes('ticket')) return Ticket
+  if (tags.includes('digital')) return Tablet
+  if (tags.includes('shopping')) return ShoppingBag
+  if (tags.includes('food')) return UtensilsCrossed
+  if (tags.includes('storage')) return Lock
+  if (tags.includes('restroom')) return Bath
+  return HelpCircle // default icon
+}
 
-function Label({ position, name, description, image, onClick, isHighlighted, onFocus }) {
+const AMENITIES = [
+  { 
+    id: 1, 
+    name: 'Guest Room',
+    position: [12.016415459246158, 2.545179283145544, 8.040242463854476],
+    description: 'Staying rooms for long layovers',
+    image: 'https://cdn.pixabay.com/photo/2016/11/30/08/48/bedroom-1872196_1280.jpg',
+    tags: ['accommodation', 'rest', 'sleep']
+  },
+  {
+    id: 2,
+    name: "Waiting Area",
+    position: [26.057093979852517, 2.903489407401707, 7.43914190356371],
+    description: "Sitting lounge for waiting for trains",
+    image: "https://cdn.pixabay.com/photo/2014/11/27/20/14/waiting-room-548136_960_720.jpg",
+    tags: ['seating', 'rest']
+  },
+  {
+    id: 3,
+    name: "Helpdesk and police station",
+    position: [35.530266678879194, 2.66204965501281, 5.586113143093582],
+    description: "Helpdesk area to seek help in case of emergency.",
+    image: "https://cdn.pixabay.com/photo/2016/02/26/01/13/telephone-1223310_1280.jpg",
+    tags: ['help', 'rest']
+  },
+  {
+    id: 4,
+    name: "Flyover",
+    position: [32.7898925979792, -5.0797801005786525, -2.1249571787497055],
+    description: "Flyover connecting platform 1 and platform 2.",
+    image: "https://cdn.pixabay.com/photo/2020/09/24/17/44/bridge-5599336_1280.jpg",
+    tags: ['bridge', 'rest']
+  },
+  {
+    id: 5,
+    name: "Ticket Counter",
+    position: [27.902290155942367, -4.710425474953573, -1.1645742440065368],
+    description: "Collect ticket for trains.",
+    image: "https://media.istockphoto.com/id/624374948/photo/boarding-the-plane-departure-lounge.jpg?s=1024x1024&w=is&k=20&c=S741SDjVd2pebhcaNliX590jmkpWbAdS7P_YAE7CSZE=",
+    tags: ['ticket', 'rest']
+  },
+  {
+    id: 6,
+    name: "Digital Kiosk 1",
+    position: [9.357971435217456, -6.109332195695361, 0.6194542677134705],
+    description: "Kiosks for navigation and calling helpdesks.",
+    image: "https://media.istockphoto.com/id/1471533844/photo/copenhagen-denmark.jpg?s=612x612&w=0&k=20&c=s5VcO6pyrraTQuKPkfRfyVSLRwrHr84uzoSR2wJvuVI=",
+    tags: ['digital', 'rest']
+  },
+  {
+    id: 7,
+    name: "Miscelleneous Stores",
+    position: [-19.347162965118233, -1.4721520611946464, 1.2886667075625238],
+    description: "Book Stores, General Stores, Toy Stores etc.",
+    image: "https://cdn.pixabay.com/photo/2016/03/02/20/13/grocery-1232944_960_720.jpg",
+    tags: ['shopping', 'rest']
+  },
+  {
+    id: 8,
+    name: "Food court",
+    position: [-5.6070942333090965, -0.9286954981430944, 4.635295612679769],
+    description: "Food court with multiple food business outlets.",
+    image: "https://cdn.pixabay.com/photo/2021/11/01/15/52/spring-roll-6760871_1280.jpg",
+    tags: ['food', 'rest']
+  },
+  {
+    id: 9,
+    name: "Luggage lockers",
+    position: [-32.34578096983119, -0.6615612553673581, 7.7113781505357695],
+    description: "Keep your luggage safe at lockers here.",
+    image: "https://cdn.pixabay.com/photo/2015/11/10/22/29/odd-1037935_960_720.jpg",
+    tags: ['storage', 'rest']
+  },
+  {
+    id: 10,
+    name: "Washroom",
+    position: [-22.300059797786226, -0.4004004744364605, 2.3471971288012274],
+    description: "Washroom",
+    image: "https://cdn.pixabay.com/photo/2021/12/18/06/02/bathroom-6878035_1280.jpg",
+    tags: ['restroom', 'rest']
+  }
+]
+
+function Label({ position, name, description, image, tags, onClick, isHighlighted, onFocus }) {
   const [isHovered, setIsHovered] = useState(false)
+  const IconComponent = getIconComponent(tags)
   
   const handleClick = () => {
     onClick({ name, description, image })
@@ -133,30 +131,17 @@ function Label({ position, name, description, image, onClick, isHighlighted, onF
     <group position={position}>
       <Html distanceFactor={10}>
         <div
-          style={{
-            padding: '12px',
-            background: isHighlighted 
-              ? '#2196F3' 
-              : isHovered 
-                ? 'rgba(33, 150, 243, 0.8)' 
-                : '#1a1a1a',
-            borderRadius: '4px',
-            color: 'white',
-            cursor: 'pointer',
-            transform: 'translate3d(-50%, -50%, 0)',
-            fontSize: '16px',
-            userSelect: 'none',
-            transition: 'all 0.3s ease',
-            boxShadow: isHighlighted ? '0 0 15px rgba(33, 150, 243, 0.5)' : 'none',
-            border: isHighlighted ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-            animation: isHighlighted ? 'pulse 2s infinite' : 'none',
-            opacity: 1
-          }}
+          className={`amcard ${isHighlighted ? 'highlighted' : ''}`}
           onPointerEnter={() => setIsHovered(true)}
           onPointerLeave={() => setIsHovered(false)}
           onClick={handleClick}
         >
-          {name}
+          <div className="amcard-icon-container">
+            <IconComponent size={48} strokeWidth={1.5} />
+          </div>
+          <div className="amcard-text">
+            {name}
+          </div>
         </div>
       </Html>
     </group>
@@ -255,44 +240,39 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
 
   useEffect(() => {
     if (gltf) {
-      // Center the model
-      const box = new THREE.Box3().setFromObject(gltf.scene)
-      const center = box.getCenter(new THREE.Vector3())
-      gltf.scene.position.sub(center)
+      try {
+        // Center the model
+        const box = new THREE.Box3().setFromObject(gltf.scene)
+        const center = box.getCenter(new THREE.Vector3())
+        gltf.scene.position.sub(center)
 
-      // Adjust material properties
-      gltf.scene.traverse((child) => {
-        if (child.isMesh) {
-          child.material = child.material.clone()
-          child.material.roughness = 0.5
-          child.material.metalness = 0.5
+        // Adjust material properties
+        gltf.scene.traverse((child) => {
+          if (child.isMesh) {
+            child.material = child.material.clone()
+            child.material.roughness = 0.5
+            child.material.metalness = 0.5
+            child.material.needsUpdate = true
+          }
+        })
+
+        setModelLoaded(true)
+        originalCameraPosition.current = camera.position.clone()
+
+        // Set camera limits
+        if (controls) {
+          controls.maxPolarAngle = Math.PI / 2 // Prevent viewing from below
+          controls.minPolarAngle = Math.PI / 4 // Limit top-down view
+          controls.update()
         }
-      })
 
-      setModelLoaded(true)
-      originalCameraPosition.current = camera.position.clone()
-
-      // Set camera limits
-      if (controls) {
-        controls.maxPolarAngle = Math.PI / 2 // Prevent viewing from below
-        controls.minPolarAngle = Math.PI / 4 // Limit top-down view
+        // Log successful loading
+        console.log('Model loaded successfully')
+      } catch (error) {
+        console.error('Error setting up model:', error)
       }
     }
   }, [gltf, camera, controls])
-
-  // Update model darkness based on search
-  useEffect(() => {
-    if (gltf) {
-      const isSearching = searchQuery.length > 0
-      gltf.scene.traverse((child) => {
-        if (child.isMesh) {
-          child.material.opacity = isSearching ? 0.3 : 1
-          child.material.transparent = true
-          child.material.needsUpdate = true
-        }
-      })
-    }
-  }, [gltf, searchQuery])
 
   // Function to focus camera on amcard
   const focusOnAmcard = (position) => {
@@ -305,36 +285,45 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
       a.position[2] === position[2]
     )
 
-    if (!amenity) return
+    if (!amenity) {
+      console.warn('Amenity not found for position:', position)
+      isAnimating.current = false
+      return
+    }
 
     setFocusedAmenity(amenity)
 
-    // Calculate camera offset from amcard
-    const offset = new THREE.Vector3(0, 0.5, 1)
-    const newCameraPos = new THREE.Vector3(...position).add(offset)
+    try {
+      // Calculate camera offset from amcard
+      const offset = new THREE.Vector3(0, 0.5, 1)
+      const newCameraPos = new THREE.Vector3(...position).add(offset)
 
-    // Animate camera position
-    gsap.to(camera.position, {
-      x: newCameraPos.x,
-      y: newCameraPos.y,
-      z: newCameraPos.z,
-      duration: 1.5,
-      ease: "power2.inOut",
-      onComplete: () => {
-        isAnimating.current = false
-      }
-    })
+      // Animate camera position
+      gsap.to(camera.position, {
+        x: newCameraPos.x,
+        y: newCameraPos.y,
+        z: newCameraPos.z,
+        duration: 1.5,
+        ease: "power2.inOut",
+        onComplete: () => {
+          isAnimating.current = false
+        }
+      })
 
-    // Point camera at amcard
-    const newTarget = new THREE.Vector3(...position)
-    gsap.to(controls.target, {
-      x: newTarget.x,
-      y: newTarget.y,
-      z: newTarget.z,
-      duration: 1.5,
-      ease: "power2.inOut",
-      onUpdate: () => controls.update()
-    })
+      // Point camera at amcard
+      const newTarget = new THREE.Vector3(...position)
+      gsap.to(controls.target, {
+        x: newTarget.x,
+        y: newTarget.y,
+        z: newTarget.z,
+        duration: 1.5,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      })
+    } catch (error) {
+      console.error('Error animating camera:', error)
+      isAnimating.current = false
+    }
 
     // Add reset button if it doesn't exist
     if (!document.querySelector('.reset-view-button')) {
@@ -347,77 +336,95 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
 
         setFocusedAmenity(null)
 
-        gsap.to(camera.position, {
-          x: originalCameraPosition.current.x,
-          y: originalCameraPosition.current.y,
-          z: originalCameraPosition.current.z,
-          duration: 1.5,
-          ease: "power2.inOut",
-          onComplete: () => {
-            isAnimating.current = false
-            resetButton.remove()
-          }
-        })
+        try {
+          gsap.to(camera.position, {
+            x: originalCameraPosition.current.x,
+            y: originalCameraPosition.current.y,
+            z: originalCameraPosition.current.z,
+            duration: 1.5,
+            ease: "power2.inOut",
+            onComplete: () => {
+              isAnimating.current = false
+              resetButton.remove()
+            }
+          })
 
-        gsap.to(controls.target, {
-          x: 0,
-          y: 0,
-          z: 0,
-          duration: 1.5,
-          ease: "power2.inOut",
-          onUpdate: () => controls.update()
-        })
+          gsap.to(controls.target, {
+            x: 0,
+            y: 0,
+            z: 0,
+            duration: 1.5,
+            ease: "power2.inOut",
+            onUpdate: () => controls.update()
+          })
+        } catch (error) {
+          console.error('Error resetting camera:', error)
+          isAnimating.current = false
+        }
       }
       document.body.appendChild(resetButton)
     }
   }
 
-  // Handle search effect
-  useEffect(() => {
-    if (searchQuery.length > 0) {
-      const searchTerms = searchQuery.toLowerCase().split(' ').filter(term => term.length > 0)
-      const matches = AMENITIES.filter(amenity => 
-        searchTerms.some(term => 
-          amenity.name.toLowerCase().includes(term) ||
-          amenity.description.toLowerCase().includes(term) ||
-          amenity.keywords.some(keyword => keyword.toLowerCase().includes(term))
-        )
-      )
-
-      // Focus on first match if we have matches and aren't already focused
-      if (matches.length > 0 && !focusedAmenity) {
-        focusOnAmcard(matches[0].position)
-      }
-    }
-  }, [searchQuery])
-
   // Filter amenities based on search query
-  const filteredAmenities = AMENITIES.map(amenity => {
-    const searchTerms = searchQuery.toLowerCase().split(' ').filter(term => term.length > 0)
-    const isMatch = searchTerms.length === 0 || searchTerms.some(term => 
+  const filteredAmenities = AMENITIES.filter(amenity => {
+    if (!searchQuery) return true
+
+    const searchTerms = searchQuery.toLowerCase().split(' ')
+    return searchTerms.every(term =>
       amenity.name.toLowerCase().includes(term) ||
       amenity.description.toLowerCase().includes(term) ||
-      amenity.keywords.some(keyword => keyword.toLowerCase().includes(term))
+      amenity.tags.some(tag => tag.toLowerCase().includes(term))
     )
-    
-    return { ...amenity, isHighlighted: isMatch && searchQuery.length > 0 }
   })
+
+  // Update model opacity based on search
+  useEffect(() => {
+    if (gltf) {
+      try {
+        const isSearching = searchQuery.length > 0
+        gltf.scene.traverse((child) => {
+          if (child.isMesh) {
+            child.material.opacity = isSearching ? 0.3 : 1
+            child.material.transparent = true
+            child.material.needsUpdate = true
+          }
+        })
+      } catch (error) {
+        console.error('Error updating model opacity:', error)
+      }
+    }
+  }, [gltf, searchQuery])
+
+  // Focus on the first matching amenity when searching
+  useEffect(() => {
+    if (searchQuery && filteredAmenities.length > 0) {
+      focusOnAmcard(filteredAmenities[0].position)
+    } else {
+      setFocusedAmenity(null)
+    }
+  }, [searchQuery, filteredAmenities])
 
   return (
     <>
-      {gltf && <primitive object={gltf.scene} scale={1} />}
-      {modelLoaded && filteredAmenities.map((amenity) => (
-        <Label
-          key={amenity.id}
-          position={amenity.position}
-          name={amenity.name}
-          description={amenity.description}
-          image={amenity.image}
-          onClick={onLabelClick}
-          isHighlighted={amenity.isHighlighted}
-          onFocus={focusOnAmcard}
-        />
-      ))}
+      {gltf && (
+        <group visible={modelLoaded}>
+          <primitive object={gltf.scene} scale={1} />
+          {modelLoaded && filteredAmenities.map((amenity) => (
+            <Label
+              key={amenity.id}
+              position={amenity.position}
+              name={amenity.name}
+              description={amenity.description}
+              image={amenity.image}
+              tags={amenity.tags}
+              onClick={onLabelClick}
+              isHighlighted={focusedAmenity?.id === amenity.id}
+              onFocus={focusOnAmcard}
+            />
+          ))}
+        </group>
+      )}
     </>
   )
 } 
