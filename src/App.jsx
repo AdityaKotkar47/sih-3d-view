@@ -25,8 +25,15 @@ function InfoPanel({ info, onClose }) {
   return (
     <div className="info-panel">
       <button className="close-button" onClick={onClose}>×</button>
-      <h3>{info.name}</h3>
-      <p>{info.description}</p>
+      {info.image && (
+        <div className="info-image-container">
+          <img src={info.image} alt={info.name} className="info-image" />
+        </div>
+      )}
+      <div className="info-content">
+        <h3>{info.name}</h3>
+        <p>{info.description}</p>
+      </div>
     </div>
   )
 }
