@@ -246,12 +246,70 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
         const center = box.getCenter(new THREE.Vector3())
         gltf.scene.position.sub(center)
 
-        // Adjust material properties
+        // Natural material enhancement
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
+            // Enhanced shadow properties
+            child.castShadow = true
+            child.receiveShadow = true
+            child.material.shadowSide = THREE.FrontSide
+            
+            // Clone material to avoid modifying cached version
             child.material = child.material.clone()
-            child.material.roughness = 0.5
-            child.material.metalness = 0.5
+            
+            // Keep original colors and maps
+            const originalColor = child.material.color?.clone()
+            const originalMap = child.material.map
+            
+            // Natural material properties
+            child.material.envMapIntensity = 0.7
+            
+            // Adjust material properties based on type
+            if (child.material.name.includes('glass') || child.material.name.includes('window')) {
+              child.material.roughness = 0.1
+              child.material.metalness = 0.9
+              child.material.envMapIntensity = 1.5
+              child.castShadow = false  // Glass doesn't cast strong shadows
+            } else if (child.material.name.includes('metal') || child.material.name.includes('steel')) {
+              child.material.roughness = 0.4
+              child.material.metalness = 0.8
+              child.material.shadowSide = THREE.DoubleSide
+            } else {
+              // Default for building materials (concrete, wood, etc)
+              child.material.roughness = 0.8
+              child.material.metalness = 0.1
+              child.material.shadowSide = THREE.DoubleSide
+            }
+            
+            // Ground/floor specific adjustments
+            if (child.position.y < 0.1) {  // Assuming ground level objects
+              child.receiveShadow = true
+              child.castShadow = false
+              child.material.roughness = Math.max(child.material.roughness, 0.9)
+            }
+            
+            // Enhance textures if present
+            if (originalMap) {
+              child.material.map = originalMap
+              child.material.map.encoding = THREE.sRGBEncoding
+              child.material.map.anisotropy = 16
+              child.material.map.minFilter = THREE.LinearMipmapLinearFilter
+              child.material.map.magFilter = THREE.LinearFilter
+              child.material.map.needsUpdate = true
+            }
+            
+            // Restore original colors with slight adjustment for realism
+            if (originalColor) {
+              child.material.color = originalColor
+              const hsl = {}
+              originalColor.getHSL(hsl)
+              originalColor.setHSL(
+                hsl.h,
+                Math.min(hsl.s * 0.9, 0.8),
+                Math.min(hsl.l * 0.95, 0.95)
+              )
+            }
+            
             child.material.needsUpdate = true
           }
         })
@@ -261,12 +319,11 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
 
         // Set camera limits
         if (controls) {
-          controls.maxPolarAngle = Math.PI / 2 // Prevent viewing from below
-          controls.minPolarAngle = Math.PI / 4 // Limit top-down view
+          controls.maxPolarAngle = Math.PI / 2
+          controls.minPolarAngle = Math.PI / 4
           controls.update()
         }
 
-        // Log successful loading
         console.log('Model loaded successfully')
       } catch (error) {
         console.error('Error setting up model:', error)

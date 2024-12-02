@@ -1,6 +1,8 @@
 import { Suspense, useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei'
+import { OrbitControls, Environment } from '@react-three/drei'
+import { EffectComposer, Bloom, SSAO } from '@react-three/postprocessing'
+import { BlendFunction } from 'postprocessing'
 import Model from './components/Model'
 import LoadingScreen from './components/LoadingScreen'
 import './App.css'
@@ -106,17 +108,53 @@ function App() {
           height: '100vh',
           background: '#242424'
         }}
+        shadows
       >
         <Suspense fallback={null}>
-          <Environment preset="city" />
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
+          <Environment preset="sunset" intensity={0.7} />
+          <ambientLight intensity={0.4} />
+          <directionalLight 
+            position={[35, 20, 5]} 
+            intensity={1.5}
+            castShadow
+            shadow-mapSize={[4096, 4096]}
+            shadow-bias={-0.00005}
+            shadow-normalBias={0.02}
+            shadow-camera-left={-35}
+            shadow-camera-right={35}
+            shadow-camera-top={35}
+            shadow-camera-bottom={-35}
+            shadow-camera-near={1}
+            shadow-camera-far={70}
+          />
+          <directionalLight 
+            position={[-20, 10, -10]} 
+            intensity={0.4} 
+            color="#ccd9ff"
+          />
           <Model 
             onProgress={setLoadingProgress}
             onLabelClick={handleLabelClick}
             searchQuery={searchQuery}
             onHighlightedAmenityChange={setHighlightedAmenity}
           />
+          <EffectComposer>
+            <Bloom 
+              intensity={0.1}
+              luminanceThreshold={0.9}
+              luminanceSmoothing={0.3}
+            />
+            <SSAO
+              blendFunction={BlendFunction.MULTIPLY}
+              samples={31}
+              radius={0.5}
+              intensity={25}
+              maxDepthStrategy={0}
+              minRadiusScale={0.2}
+              maxRadiusScale={0.8}
+              distanceFalloff={0.5}
+            />
+          </EffectComposer>
           <OrbitControls 
             enableDamping
             dampingFactor={0.05}
