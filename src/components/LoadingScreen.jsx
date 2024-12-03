@@ -112,8 +112,7 @@ export default function LoadingScreen({ progress }) {
             letterSpacing: '3px',
             textTransform: 'uppercase',
             color: '#ffffff15',
-            filter: 'blur(0.2px)',
-            position: 'relative'
+            filter: 'blur(0.2px)'
           }}
         >
           <span style={{ animation: 'textGlow 2s ease-in-out infinite' }}>L</span>

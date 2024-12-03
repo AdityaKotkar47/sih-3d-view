@@ -1,8 +1,6 @@
 import { Suspense, useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
-import { EffectComposer, Bloom, SSAO } from '@react-three/postprocessing'
-import { BlendFunction } from 'postprocessing'
 import Model from './components/Model'
 import LoadingScreen from './components/LoadingScreen'
 import './App.css'
@@ -138,23 +136,6 @@ function App() {
             searchQuery={searchQuery}
             onHighlightedAmenityChange={setHighlightedAmenity}
           />
-          <EffectComposer>
-            <Bloom 
-              intensity={0.1}
-              luminanceThreshold={0.9}
-              luminanceSmoothing={0.3}
-            />
-            <SSAO
-              blendFunction={BlendFunction.MULTIPLY}
-              samples={31}
-              radius={0.5}
-              intensity={25}
-              maxDepthStrategy={0}
-              minRadiusScale={0.2}
-              maxRadiusScale={0.8}
-              distanceFalloff={0.5}
-            />
-          </EffectComposer>
           <OrbitControls 
             enableDamping
             dampingFactor={0.05}
