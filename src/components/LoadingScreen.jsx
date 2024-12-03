@@ -111,11 +111,18 @@ export default function LoadingScreen({ progress }) {
             fontSize: '14px',
             letterSpacing: '3px',
             textTransform: 'uppercase',
-            color: '#ffffff60',
-            animation: 'fadeInOut 2s ease-in-out infinite'
+            color: '#ffffff15',
+            filter: 'blur(0.2px)',
+            position: 'relative'
           }}
         >
-          Loading
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite' }}>L</span>
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite', animationDelay: '0.2s' }}>o</span>
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite', animationDelay: '0.4s' }}>a</span>
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite', animationDelay: '0.6s' }}>d</span>
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite', animationDelay: '0.8s' }}>i</span>
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite', animationDelay: '1.0s' }}>n</span>
+          <span style={{ animation: 'textGlow 2s ease-in-out infinite', animationDelay: '1.2s' }}>g</span>
         </div>
       </div>
 
@@ -131,9 +138,58 @@ export default function LoadingScreen({ progress }) {
             50% { transform: scale(1.5); opacity: 1; }
           }
 
-          @keyframes fadeInOut {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.7; }
+          @keyframes textGlow {
+            0%, 100% {
+              color: rgba(255, 255, 255, 0.15);
+              text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.05),
+                0 0 4px rgba(255, 255, 255, 0.05);
+              filter: brightness(0.7) contrast(1.2) blur(0.3px);
+            }
+            15% {
+              color: rgba(255, 255, 255, 0.2);
+              text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.1),
+                0 0 4px rgba(255, 255, 255, 0.05),
+                0 0 6px rgba(255, 255, 255, 0.05);
+              filter: brightness(0.8) contrast(1.2) blur(0.2px);
+            }
+            35% {
+              color: rgba(255, 255, 255, 0.25);
+              text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.15),
+                0 0 4px rgba(255, 255, 255, 0.1),
+                0 0 6px rgba(255, 255, 255, 0.05),
+                0 0 8px rgba(255, 255, 255, 0.05);
+              filter: brightness(0.9) contrast(1.3) blur(0.2px);
+            }
+            50% {
+              color: rgba(255, 255, 255, 0.35);
+              text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.2),
+                0 0 4px rgba(255, 255, 255, 0.15),
+                0 0 6px rgba(255, 255, 255, 0.1),
+                0 0 8px rgba(255, 255, 255, 0.05),
+                0 0 12px rgba(255, 255, 255, 0.05);
+              filter: brightness(1) contrast(1.4) blur(0.1px);
+            }
+            65% {
+              color: rgba(255, 255, 255, 0.25);
+              text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.15),
+                0 0 4px rgba(255, 255, 255, 0.1),
+                0 0 6px rgba(255, 255, 255, 0.05),
+                0 0 8px rgba(255, 255, 255, 0.05);
+              filter: brightness(0.9) contrast(1.3) blur(0.2px);
+            }
+            85% {
+              color: rgba(255, 255, 255, 0.2);
+              text-shadow: 
+                0 0 2px rgba(255, 255, 255, 0.1),
+                0 0 4px rgba(255, 255, 255, 0.05),
+                0 0 6px rgba(255, 255, 255, 0.05);
+              filter: brightness(0.8) contrast(1.2) blur(0.2px);
+            }
           }
 
           @keyframes rotate {
