@@ -151,9 +151,32 @@ function Label({ position, name, description, image, tags, onClick, isHighlighte
 function useModelDownload(url) {
   const [progress, setProgress] = useState(0)
   const [model, setModel] = useState(null)
+  const loadedModel = useRef(null)
+
+  const animateProgress = (startValue, endValue, duration, onComplete) => {
+    return new Promise((resolve) => {
+      const steps = 20
+      const stepValue = (endValue - startValue) / steps
+      const stepDuration = duration / steps
+      let currentStep = 0
+
+      const interval = setInterval(() => {
+        if (currentStep <= steps) {
+          const newProgress = startValue + stepValue * currentStep
+          setProgress(Math.min(Math.round(newProgress), endValue))
+          currentStep++
+        } else {
+          clearInterval(interval)
+          resolve()
+          if (onComplete) onComplete()
+        }
+      }, stepDuration)
+    })
+  }
 
   useEffect(() => {
     const loader = new GLTFLoader()
+    let isLoading = true
     
     // Check cache first
     caches.open(CACHE_KEY).then(async (cache) => {
@@ -165,14 +188,20 @@ function useModelDownload(url) {
           const arrayBuffer = await blob.arrayBuffer()
           
           loader.parse(arrayBuffer, '', 
-            (gltf) => {
-              setModel(gltf)
-              setProgress(100)
-              console.log('Model loaded from cache!')
+            async (gltf) => {
+              if (!isLoading) return
+              loadedModel.current = gltf
+              
+              // Ensure smooth progress animation
+              await animateProgress(0, 95, 600)
+              await animateProgress(95, 100, 1000)
+              // Small delay at 100% before showing model
+              await new Promise(resolve => setTimeout(resolve, 200))
+              if (isLoading) setModel(loadedModel.current)
             },
             (error) => {
               console.error('Error parsing cached model:', error)
-              loadFromNetwork()
+              if (isLoading) loadFromNetwork()
             }
           )
         } else {
@@ -180,18 +209,29 @@ function useModelDownload(url) {
         }
       } catch (error) {
         console.error('Cache error:', error)
-        loadFromNetwork()
+        if (isLoading) loadFromNetwork()
       }
     })
 
     function loadFromNetwork() {
       console.log('Downloading model from network...')
+      let lastProgress = 0
+      
       loader.load(
         url,
         async (gltf) => {
-          setModel(gltf)
-          setProgress(100)
-          console.log('Model loaded from network!')
+          if (!isLoading) return
+          loadedModel.current = gltf
+          
+          // Ensure smooth progress to 100%
+          const currentProgress = lastProgress
+          if (currentProgress < 95) {
+            await animateProgress(currentProgress, 95, 400)
+          }
+          await animateProgress(95, 100, 400)
+          // Small delay at 100% before showing model
+          await new Promise(resolve => setTimeout(resolve, 200))
+          if (isLoading) setModel(loadedModel.current)
           
           // Cache the model for future use
           try {
@@ -204,21 +244,23 @@ function useModelDownload(url) {
           }
         },
         (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100)
-            setProgress(percent)
+          if (event.lengthComputable && isLoading) {
+            lastProgress = Math.round((event.loaded / event.total) * 100)
+            setProgress(Math.min(lastProgress, 95))
           }
         },
         (error) => {
           console.error('Model loading error:', error)
-          setProgress(0)
+          if (isLoading) setProgress(0)
         }
       )
     }
 
     return () => {
+      isLoading = false
       setProgress(0)
       setModel(null)
+      loadedModel.current = null
     }
   }, [url])
 
