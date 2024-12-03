@@ -1,6 +1,6 @@
 import { Suspense, useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import Model from './components/Model'
 import LoadingScreen from './components/LoadingScreen'
 import './App.css'
@@ -108,17 +108,7 @@ function App() {
         }}
       >
         <Suspense fallback={null}>
-          <Environment preset="sunset" intensity={0.7} />
-          <ambientLight intensity={0.6} />
-          <directionalLight 
-            position={[35, 20, 5]} 
-            intensity={1.2}
-          />
-          <directionalLight 
-            position={[-20, 10, -10]} 
-            intensity={0.4} 
-            color="#ccd9ff"
-          />
+          <ambientLight intensity={1} />
           <Model 
             onProgress={setLoadingProgress}
             onLabelClick={handleLabelClick}

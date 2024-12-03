@@ -298,48 +298,24 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
             const originalColor = child.material.color?.clone()
             const originalMap = child.material.map
             
-            // Natural material properties
-            child.material.envMapIntensity = 0.7
-            
-            // Adjust material properties based on type
+            // Basic material properties
             if (child.material.name.includes('glass') || child.material.name.includes('window')) {
-              child.material.roughness = 0.1
-              child.material.metalness = 0.9
-              child.material.envMapIntensity = 1.5
-            } else if (child.material.name.includes('metal') || child.material.name.includes('steel')) {
-              child.material.roughness = 0.4
-              child.material.metalness = 0.8
-            } else {
-              // Default for building materials (concrete, wood, etc)
-              child.material.roughness = 0.8
-              child.material.metalness = 0.1
-            }
-            
-            // Ground/floor specific adjustments
-            if (child.position.y < 0.1) {  // Assuming ground level objects
-              child.material.roughness = Math.max(child.material.roughness, 0.9)
+              child.material.transparent = true
+              child.material.opacity = 0.6
             }
             
             // Enhance textures if present
             if (originalMap) {
               child.material.map = originalMap
               child.material.map.encoding = THREE.sRGBEncoding
-              child.material.map.anisotropy = 16
-              child.material.map.minFilter = THREE.LinearMipmapLinearFilter
+              child.material.map.minFilter = THREE.LinearFilter
               child.material.map.magFilter = THREE.LinearFilter
               child.material.map.needsUpdate = true
             }
             
-            // Restore original colors with slight adjustment for realism
+            // Restore original colors
             if (originalColor) {
               child.material.color = originalColor
-              const hsl = {}
-              originalColor.getHSL(hsl)
-              originalColor.setHSL(
-                hsl.h,
-                Math.min(hsl.s * 0.9, 0.8),
-                Math.min(hsl.l * 0.95, 0.95)
-              )
             }
             
             child.material.needsUpdate = true
