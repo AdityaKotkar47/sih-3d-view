@@ -291,11 +291,6 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
         // Natural material enhancement
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
-            // Enhanced shadow properties
-            child.castShadow = true
-            child.receiveShadow = true
-            child.material.shadowSide = THREE.FrontSide
-            
             // Clone material to avoid modifying cached version
             child.material = child.material.clone()
             
@@ -311,22 +306,17 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
               child.material.roughness = 0.1
               child.material.metalness = 0.9
               child.material.envMapIntensity = 1.5
-              child.castShadow = false  // Glass doesn't cast strong shadows
             } else if (child.material.name.includes('metal') || child.material.name.includes('steel')) {
               child.material.roughness = 0.4
               child.material.metalness = 0.8
-              child.material.shadowSide = THREE.DoubleSide
             } else {
               // Default for building materials (concrete, wood, etc)
               child.material.roughness = 0.8
               child.material.metalness = 0.1
-              child.material.shadowSide = THREE.DoubleSide
             }
             
             // Ground/floor specific adjustments
             if (child.position.y < 0.1) {  // Assuming ground level objects
-              child.receiveShadow = true
-              child.castShadow = false
               child.material.roughness = Math.max(child.material.roughness, 0.9)
             }
             

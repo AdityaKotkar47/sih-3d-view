@@ -106,24 +106,13 @@ function App() {
           height: '100vh',
           background: '#242424'
         }}
-        shadows
       >
         <Suspense fallback={null}>
           <Environment preset="sunset" intensity={0.7} />
-          <ambientLight intensity={0.4} />
+          <ambientLight intensity={0.6} />
           <directionalLight 
             position={[35, 20, 5]} 
-            intensity={1.5}
-            castShadow
-            shadow-mapSize={[4096, 4096]}
-            shadow-bias={-0.00005}
-            shadow-normalBias={0.02}
-            shadow-camera-left={-35}
-            shadow-camera-right={35}
-            shadow-camera-top={35}
-            shadow-camera-bottom={-35}
-            shadow-camera-near={1}
-            shadow-camera-far={70}
+            intensity={1.2}
           />
           <directionalLight 
             position={[-20, 10, -10]} 
