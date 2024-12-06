@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
-import gsap from 'gsap'
 import { 
   Hotel, 
   Sofa, 
@@ -15,10 +14,9 @@ import {
   Lock,
   Bath
 } from 'lucide-react'
-import { useModelDownload } from '../hooks/useModelDownload.js'
+import { useModelDownload } from '../hooks/useModelDownload'
 
 const MODEL_URL = 'https://utfs.io/f/zALdaFej0tyef6wegO2UwhctIHY7xMjLSGQZdrezTXyROqKp'
-const CACHE_KEY = 'modelCache_v1'
 
 const getIconComponent = (tags) => {
   // Map tags to icons - can be expanded based on more tags
@@ -36,8 +34,8 @@ const getIconComponent = (tags) => {
 }
 
 const AMENITIES = [
-  { 
-    id: 1, 
+  {
+    id: 1,
     name: 'Guest Room',
     position: [12.016415459246158, 2.545179283145544, 8.040242463854476],
     description: 'Staying rooms for long layovers',
@@ -118,14 +116,9 @@ const AMENITIES = [
   }
 ]
 
-function Label({ position, name, description, image, tags, onClick, isHighlighted, onFocus }) {
+function Label({ position, name, description, image, tags, onClick, isHighlighted }) {
   const [isHovered, setIsHovered] = useState(false)
   const IconComponent = getIconComponent(tags)
-  
-  const handleClick = () => {
-    onClick({ name, description, image })
-    onFocus(position)
-  }
   
   return (
     <group position={position}>
@@ -134,7 +127,7 @@ function Label({ position, name, description, image, tags, onClick, isHighlighte
           className={`amcard ${isHighlighted ? 'highlighted' : ''}`}
           onPointerEnter={() => setIsHovered(true)}
           onPointerLeave={() => setIsHovered(false)}
-          onClick={handleClick}
+          onClick={() => onClick({ name, description, image })}
         >
           <div className="amcard-icon-container">
             <IconComponent size={48} strokeWidth={1.5} />
@@ -151,11 +144,35 @@ function Label({ position, name, description, image, tags, onClick, isHighlighte
 export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
   const { camera, controls } = useThree()
   const [modelLoaded, setModelLoaded] = useState(false)
-  const originalCameraPosition = useRef(null)
-  const isAnimating = useRef(false)
   const [focusedAmenity, setFocusedAmenity] = useState(null)
-  
+  const [filteredAmenities, setFilteredAmenities] = useState(AMENITIES)
+
   const { progress, model: gltf } = useModelDownload(MODEL_URL)
+
+  // Update filtered amenities when search query changes
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredAmenities(AMENITIES)
+      setFocusedAmenity(null)
+      return
+    }
+    const searchTerms = searchQuery.toLowerCase().split(' ')
+    const filtered = AMENITIES.filter(amenity =>
+      searchTerms.every(term =>
+        amenity.name.toLowerCase().includes(term) ||
+        amenity.description.toLowerCase().includes(term) ||
+        amenity.tags.some(tag => tag.toLowerCase().includes(term))
+      )
+    )
+    setFilteredAmenities(filtered)
+    
+    // Update highlighted amenity for search
+    if (filtered.length > 0) {
+      setFocusedAmenity(filtered[0])
+    } else {
+      setFocusedAmenity(null)
+    }
+  }, [searchQuery])
 
   useEffect(() => {
     onProgress(progress)
@@ -172,20 +189,16 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
         // Natural material enhancement
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
-            // Clone material to avoid modifying cached version
             child.material = child.material.clone()
             
-            // Keep original colors and maps
             const originalColor = child.material.color?.clone()
             const originalMap = child.material.map
             
-            // Basic material properties
             if (child.material.name.includes('glass') || child.material.name.includes('window')) {
               child.material.transparent = true
               child.material.opacity = 0.6
             }
             
-            // Enhance textures if present
             if (originalMap) {
               child.material.map = originalMap
               child.material.map.encoding = THREE.sRGBEncoding
@@ -194,7 +207,6 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
               child.material.map.needsUpdate = true
             }
             
-            // Restore original colors
             if (originalColor) {
               child.material.color = originalColor
             }
@@ -204,7 +216,6 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
         })
 
         setModelLoaded(true)
-        originalCameraPosition.current = camera.position.clone()
 
         // Set camera limits
         if (controls) {
@@ -213,116 +224,11 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
           controls.update()
         }
 
-        console.log('Model loaded successfully')
       } catch (error) {
         console.error('Error setting up model:', error)
       }
     }
   }, [gltf, camera, controls])
-
-  // Function to focus camera on amcard
-  const focusOnAmcard = (position) => {
-    if (isAnimating.current) return
-
-    isAnimating.current = true
-    const amenity = AMENITIES.find(a => 
-      a.position[0] === position[0] && 
-      a.position[1] === position[1] && 
-      a.position[2] === position[2]
-    )
-
-    if (!amenity) {
-      console.warn('Amenity not found for position:', position)
-      isAnimating.current = false
-      return
-    }
-
-    setFocusedAmenity(amenity)
-
-    try {
-      // Calculate camera offset from amcard
-      const offset = new THREE.Vector3(0, 0.5, 1)
-      const newCameraPos = new THREE.Vector3(...position).add(offset)
-
-      // Animate camera position
-      gsap.to(camera.position, {
-        x: newCameraPos.x,
-        y: newCameraPos.y,
-        z: newCameraPos.z,
-        duration: 1.5,
-        ease: "power2.inOut",
-        onComplete: () => {
-          isAnimating.current = false
-        }
-      })
-
-      // Point camera at amcard
-      const newTarget = new THREE.Vector3(...position)
-      gsap.to(controls.target, {
-        x: newTarget.x,
-        y: newTarget.y,
-        z: newTarget.z,
-        duration: 1.5,
-        ease: "power2.inOut",
-        onUpdate: () => controls.update()
-      })
-    } catch (error) {
-      console.error('Error animating camera:', error)
-      isAnimating.current = false
-    }
-
-    // Add reset button if it doesn't exist
-    if (!document.querySelector('.reset-view-button')) {
-      const resetButton = document.createElement('button')
-      resetButton.textContent = 'Reset View'
-      resetButton.className = 'reset-view-button'
-      resetButton.onclick = () => {
-        if (isAnimating.current) return
-        isAnimating.current = true
-
-        setFocusedAmenity(null)
-
-        try {
-          gsap.to(camera.position, {
-            x: originalCameraPosition.current.x,
-            y: originalCameraPosition.current.y,
-            z: originalCameraPosition.current.z,
-            duration: 1.5,
-            ease: "power2.inOut",
-            onComplete: () => {
-              isAnimating.current = false
-              resetButton.remove()
-            }
-          })
-
-          gsap.to(controls.target, {
-            x: 0,
-            y: 0,
-            z: 0,
-            duration: 1.5,
-            ease: "power2.inOut",
-            onUpdate: () => controls.update()
-          })
-        } catch (error) {
-          console.error('Error resetting camera:', error)
-          isAnimating.current = false
-        }
-      }
-      document.body.appendChild(resetButton)
-    }
-  }
-
-  // Filter amenities based on search query
-  const filteredAmenities = AMENITIES.filter(amenity => {
-    if (!searchQuery) return true
-
-    const searchTerms = searchQuery.toLowerCase().split(' ')
-    return searchTerms.every(term =>
-      amenity.name.toLowerCase().includes(term) ||
-      amenity.description.toLowerCase().includes(term) ||
-      amenity.tags.some(tag => tag.toLowerCase().includes(term))
-    )
-  })
 
   // Update model opacity based on search
   useEffect(() => {
@@ -342,15 +248,6 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
     }
   }, [gltf, searchQuery])
 
-  // Focus on the first matching amenity when searching
-  useEffect(() => {
-    if (searchQuery && filteredAmenities.length > 0) {
-      focusOnAmcard(filteredAmenities[0].position)
-    } else {
-      setFocusedAmenity(null)
-    }
-  }, [searchQuery, filteredAmenities])
-
   return (
     <>
       {gltf && (
@@ -366,7 +263,6 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
               tags={amenity.tags}
               onClick={onLabelClick}
               isHighlighted={focusedAmenity?.id === amenity.id}
-              onFocus={focusOnAmcard}
             />
           ))}
         </group>
