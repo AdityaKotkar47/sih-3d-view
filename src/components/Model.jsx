@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import gsap from 'gsap'
@@ -16,6 +15,7 @@ import {
   Lock,
   Bath
 } from 'lucide-react'
+import { useModelDownload } from '../hooks/useModelDownload.js'
 
 const MODEL_URL = 'https://utfs.io/f/zALdaFej0tyef6wegO2UwhctIHY7xMjLSGQZdrezTXyROqKp'
 const CACHE_KEY = 'modelCache_v1'
@@ -146,125 +146,6 @@ function Label({ position, name, description, image, tags, onClick, isHighlighte
       </Html>
     </group>
   )
-}
-
-function useModelDownload(url) {
-  const [progress, setProgress] = useState(0)
-  const [model, setModel] = useState(null)
-  const loadedModel = useRef(null)
-
-  const animateProgress = (startValue, endValue, duration, onComplete) => {
-    return new Promise((resolve) => {
-      const steps = 20
-      const stepValue = (endValue - startValue) / steps
-      const stepDuration = duration / steps
-      let currentStep = 0
-
-      const interval = setInterval(() => {
-        if (currentStep <= steps) {
-          const newProgress = startValue + stepValue * currentStep
-          setProgress(Math.min(Math.round(newProgress), endValue))
-          currentStep++
-        } else {
-          clearInterval(interval)
-          resolve()
-          if (onComplete) onComplete()
-        }
-      }, stepDuration)
-    })
-  }
-
-  useEffect(() => {
-    const loader = new GLTFLoader()
-    let isLoading = true
-    
-    // Check cache first
-    caches.open(CACHE_KEY).then(async (cache) => {
-      try {
-        const cachedResponse = await cache.match(url)
-        if (cachedResponse) {
-          console.log('Loading model from cache...')
-          const blob = await cachedResponse.blob()
-          const arrayBuffer = await blob.arrayBuffer()
-          
-          loader.parse(arrayBuffer, '', 
-            async (gltf) => {
-              if (!isLoading) return
-              loadedModel.current = gltf
-              
-              // Ensure smooth progress animation
-              await animateProgress(0, 95, 600)
-              await animateProgress(95, 100, 1000)
-              // Small delay at 100% before showing model
-              await new Promise(resolve => setTimeout(resolve, 200))
-              if (isLoading) setModel(loadedModel.current)
-            },
-            (error) => {
-              console.error('Error parsing cached model:', error)
-              if (isLoading) loadFromNetwork()
-            }
-          )
-        } else {
-          loadFromNetwork()
-        }
-      } catch (error) {
-        console.error('Cache error:', error)
-        if (isLoading) loadFromNetwork()
-      }
-    })
-
-    function loadFromNetwork() {
-      console.log('Downloading model from network...')
-      let lastProgress = 0
-      
-      loader.load(
-        url,
-        async (gltf) => {
-          if (!isLoading) return
-          loadedModel.current = gltf
-          
-          // Ensure smooth progress to 100%
-          const currentProgress = lastProgress
-          if (currentProgress < 95) {
-            await animateProgress(currentProgress, 95, 400)
-          }
-          await animateProgress(95, 100, 400)
-          // Small delay at 100% before showing model
-          await new Promise(resolve => setTimeout(resolve, 200))
-          if (isLoading) setModel(loadedModel.current)
-          
-          // Cache the model for future use
-          try {
-            const response = await fetch(url)
-            const cache = await caches.open(CACHE_KEY)
-            await cache.put(url, response)
-            console.log('Model cached successfully!')
-          } catch (error) {
-            console.error('Caching error:', error)
-          }
-        },
-        (event) => {
-          if (event.lengthComputable && isLoading) {
-            lastProgress = Math.round((event.loaded / event.total) * 100)
-            setProgress(Math.min(lastProgress, 95))
-          }
-        },
-        (error) => {
-          console.error('Model loading error:', error)
-          if (isLoading) setProgress(0)
-        }
-      )
-    }
-
-    return () => {
-      isLoading = false
-      setProgress(0)
-      setModel(null)
-      loadedModel.current = null
-    }
-  }, [url])
-
-  return { progress, model }
 }
 
 export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
