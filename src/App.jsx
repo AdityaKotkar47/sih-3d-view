@@ -28,11 +28,28 @@ function SearchBar({ value, onSearch, onEnter }) {
 }
 
 function InfoPanel({ info, onClose }) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    // Duration should match the CSS transition duration (0.3s)
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 300);
+  };
+
   if (!info) return null;
-  
+
   return (
-    <div className="info-panel">
-      <button className="close-button" onClick={onClose}>×</button>
+    <div className={`info-panel ${isClosing ? 'fade-out' : 'fade-in'}`}>
+      <button
+        className="close-button"
+        onClick={handleClose}
+        aria-label="Close info panel"
+      >
+        ×
+      </button>
       {info.image && (
         <div className="info-image-container">
           <img src={info.image} alt={info.name} className="info-image" />
@@ -43,7 +60,7 @@ function InfoPanel({ info, onClose }) {
         <p>{info.description}</p>
       </div>
     </div>
-  )
+  );
 }
 
 function App() {
