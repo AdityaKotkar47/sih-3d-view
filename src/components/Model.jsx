@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import { useModelDownload } from '../hooks/useModelDownload'
 import { 
   Hotel, 
   Sofa, 
@@ -14,7 +15,6 @@ import {
   Lock,
   Bath
 } from 'lucide-react'
-import { useModelDownload } from '../hooks/useModelDownload'
 
 const MODEL_URL = 'https://utfs.io/f/zALdaFej0tyef6wegO2UwhctIHY7xMjLSGQZdrezTXyROqKp'
 
@@ -127,7 +127,7 @@ function Label({ position, name, description, image, tags, onClick, isHighlighte
           className={`amcard ${isHighlighted ? 'highlighted' : ''}`}
           onPointerEnter={() => setIsHovered(true)}
           onPointerLeave={() => setIsHovered(false)}
-          onClick={() => onClick({ name, description, image })}
+          onClick={() => onClick({ name, description, image, tags })}
         >
           <div className="amcard-icon-container">
             <IconComponent size={48} strokeWidth={1.5} />
@@ -166,13 +166,20 @@ export default function Model({ onProgress, onLabelClick, searchQuery = '' }) {
     )
     setFilteredAmenities(filtered)
     
-    // Update highlighted amenity for search
+    // Show info card for first search result
     if (filtered.length > 0) {
-      setFocusedAmenity(filtered[0])
+      const firstMatch = filtered[0]
+      setFocusedAmenity(firstMatch)
+      onLabelClick({
+        name: firstMatch.name,
+        description: firstMatch.description,
+        image: firstMatch.image,
+        tags: firstMatch.tags
+      })
     } else {
       setFocusedAmenity(null)
     }
-  }, [searchQuery])
+  }, [searchQuery, onLabelClick])
 
   useEffect(() => {
     onProgress(progress)
