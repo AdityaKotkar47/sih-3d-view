@@ -16,6 +16,10 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/icon.svg",
+      "dest": "/icon.svg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
