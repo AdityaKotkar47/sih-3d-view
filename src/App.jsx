@@ -5,7 +5,7 @@ import Model from './components/Model'
 import LoadingScreen from './components/LoadingScreen'
 import './App.css'
 
-function SearchBar({ onSearch, onEnter }) {
+function SearchBar({ value, onSearch, onEnter }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       onEnter()
@@ -17,6 +17,7 @@ function SearchBar({ onSearch, onEnter }) {
       <input
         type="text"
         placeholder="Search amenities..."
+        value={value}
         onChange={(e) => onSearch(e.target.value)}
         onKeyDown={handleKeyDown}
         className="search-input"
@@ -89,16 +90,22 @@ function App() {
     }
   }, [])
 
+  const handleCloseInfoPanel = () => {
+    setSelectedInfo(null)
+    setSearchQuery('')
+  }
+
   return (
     <div className="app-container">
       <LoadingScreen progress={loadingProgress} />
       {isLoaded && (
         <SearchBar 
+          value={searchQuery}
           onSearch={handleSearch} 
           onEnter={handleSearchEnter}
         />
       )}
-      <InfoPanel info={selectedInfo} onClose={() => setSelectedInfo(null)} />
+      <InfoPanel info={selectedInfo} onClose={handleCloseInfoPanel} />
       <Canvas
         camera={{ position: [0, 2, 10], fov: 75 }}
         style={{ 
