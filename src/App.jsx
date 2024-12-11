@@ -142,8 +142,8 @@ function App() {
           <OrbitControls 
             enableDamping
             dampingFactor={0.05}
-            minDistance={0.1}
-            maxDistance={1000}
+            minDistance={5}
+            maxDistance={40}
             enablePan={true}
             panSpeed={1}
             enableZoom={true}
